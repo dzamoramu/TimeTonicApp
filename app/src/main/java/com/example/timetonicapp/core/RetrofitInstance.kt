@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitInstance {
     fun makeRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://timetonic.com/live/api.php")
+            .baseUrl("https://timetonic.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

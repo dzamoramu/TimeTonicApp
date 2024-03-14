@@ -70,6 +70,9 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.converter.gson)
     implementation(libs.coroutines)
+    implementation(libs.liveData)
+    implementation(libs.icons)
+    implementation(libs.navigation)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
