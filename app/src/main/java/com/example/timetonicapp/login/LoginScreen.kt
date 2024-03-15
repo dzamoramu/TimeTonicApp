@@ -31,32 +31,39 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.timetonicapp.R
+import com.example.timetonicapp.login.components.ProgressBarLoading
 import com.example.timetonicapp.ui.theme.TimeTonicAppTheme
 
 @Composable
 fun LoginScreen(
     modifier: Modifier,
     viewModel: LoginViewModel,
-    navigationController: NavHostController,
+    loadingProgressBar: Boolean,
+    onClickLogin: (email: String, password: String) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Body(modifier = modifier, viewModel)
+        Body(modifier = modifier, viewModel, loadingProgressBar, onClickLogin)
     }
 }
 
 @Composable
-fun Body(modifier: Modifier, viewModel: LoginViewModel) {
+fun Body(
+    modifier: Modifier,
+    viewModel: LoginViewModel,
+    loadingProgressBar: Boolean,
+    onClickLogin: (email: String, password: String) -> Unit,
+) {
     val email: String by viewModel.email.observeAsState("")
     val password: String by viewModel.password.observeAsState("")
     val isLoginEnabled: Boolean by viewModel.isEnabled.observeAsState(false)
@@ -68,7 +75,7 @@ fun Body(modifier: Modifier, viewModel: LoginViewModel) {
 
         Image(
             painter = painterResource(id = R.drawable.timetoniclogo),
-            contentDescription = "TimeTonic Logo",
+            contentDescription = stringResource(id =  R.string.timeTonic_logo),
             contentScale = ContentScale.Inside
         )
 
@@ -85,7 +92,11 @@ fun Body(modifier: Modifier, viewModel: LoginViewModel) {
             }
         }
 
-        LoginButton(isLoginEnabled, viewModel)
+        LoginButton(isLoginEnabled, email, password, onClickLogin)
+
+        ProgressBarLoading(isLoading = loadingProgressBar)
+
+        Spacer(modifier = modifier.size(16.dp))
     }
 }
 
@@ -95,7 +106,7 @@ fun Email(email: String, modifier: Modifier, onTextChanged: (String) -> Unit) {
         modifier = modifier.widthIn(max = 280.dp),
         value = email,
         onValueChange = { onTextChanged(it) },
-        label = { Text(text = "Email") },
+        label = { Text(text =  stringResource(id = R.string.email)) },
         maxLines = 1,
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -112,7 +123,7 @@ fun Password(password: String, modifier: Modifier, onTextChanged: (String) -> Un
         modifier = modifier.widthIn(max = 280.dp),
         value = password,
         onValueChange = { onTextChanged(it) },
-        label = { Text(text = "Your Password") },
+        label = { Text(text = stringResource(id = R.string.your_password)) },
         maxLines = 1,
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -126,7 +137,7 @@ fun Password(password: String, modifier: Modifier, onTextChanged: (String) -> Un
                 Icons.Filled.Visibility
             }
             IconButton(onClick = { passWordVisibility = !passWordVisibility }) {
-                Icon(imageVector = image, contentDescription = "Show Password")
+                Icon(imageVector = image, contentDescription =  stringResource(id = R.string.show_password))
             }
         },
         visualTransformation = if (passWordVisibility) {
@@ -139,26 +150,37 @@ fun Password(password: String, modifier: Modifier, onTextChanged: (String) -> Un
 
 @Composable
 
-fun LoginButton(isLoginEnabled: Boolean, viewModel: LoginViewModel) {
+fun LoginButton(
+    isLoginEnabled: Boolean,
+    email: String,
+    password: String,
+    onClickLogin: (email: String, password: String) -> Unit,
+) {
     Button(
-        onClick = { viewModel.onLoginClicked() },
+        onClick = { onClickLogin(email, password) },
         enabled = isLoginEnabled,
         modifier = Modifier.width(340.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black
         )
     ) {
-        Text(text = "Log in")
+        Text(text =  stringResource(id = R.string.log_in))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
+    val onClickLogin: (String, String) -> Unit = { email, password ->
+        println("Email: $email, Password: $password")
+    }
+
     TimeTonicAppTheme {
         Body(
             Modifier,
-            LoginViewModel(LocalContext.current)
+            LoginViewModel(LocalContext.current),
+            loadingProgressBar = false,
+            onClickLogin = onClickLogin
         )
     }
 }

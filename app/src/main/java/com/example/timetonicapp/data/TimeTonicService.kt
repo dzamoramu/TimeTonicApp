@@ -2,6 +2,7 @@ package com.example.timetonicapp.data
 
 import com.example.timetonicapp.BuildConfig
 import com.example.timetonicapp.core.RetrofitInstance
+import com.example.timetonicapp.data.model.UserAllBooks
 import com.example.timetonicapp.data.model.UserOAuthResult
 import com.example.timetonicapp.data.model.UserSessionKeyResult
 import com.example.timetonicapp.data.network.TimeTonicClient
@@ -33,6 +34,19 @@ class TimeTonicService {
                 oU = oU,
                 uC = uC,
                 oauthKey = oauthKey
+            )
+            response.body()
+        }
+    }
+
+    suspend fun getAllBooks(oU: String, uC: String, sessionKey: String): UserAllBooks? {
+        return withContext(Dispatchers.IO) {
+            val response = retrofit.create(TimeTonicClient::class.java).getAllBooks(
+                version = VERSION,
+                req = "getAllBooks",
+                oU = oU,
+                uC = uC,
+                sessKey = sessionKey
             )
             response.body()
         }

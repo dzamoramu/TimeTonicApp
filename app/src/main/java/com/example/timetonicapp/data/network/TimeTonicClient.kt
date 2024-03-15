@@ -1,5 +1,6 @@
 package com.example.timetonicapp.data.network
 
+import com.example.timetonicapp.data.model.UserAllBooks
 import com.example.timetonicapp.data.model.UserOAuthResult
 import com.example.timetonicapp.data.model.UserSessionKeyResult
 import retrofit2.Response
@@ -25,4 +26,12 @@ interface TimeTonicClient {
         @Query("oauthkey") oauthKey: String,
     ): Response<UserSessionKeyResult>
 
+    @POST("live/api.php")
+    suspend fun getAllBooks(
+        @Query("version") version: String,
+        @Query("req") req: String,
+        @Query("u_c") uC: String,
+        @Query("o_u") oU: String,
+        @Query("sesskey") sessKey: String,
+    ): Response<UserAllBooks>
 }

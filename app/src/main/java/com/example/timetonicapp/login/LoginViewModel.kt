@@ -1,7 +1,9 @@
 package com.example.timetonicapp.login
 
 import android.content.Context
+import android.util.Log
 import android.util.Patterns
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,18 +13,24 @@ import com.example.timetonicapp.data.model.UserOAuthResult
 import com.example.timetonicapp.data.model.UserSessionKeyResult
 import com.example.timetonicapp.domain.LoginUseCase
 import com.example.timetonicapp.domain.UserSessionKeyUseCase
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 class LoginViewModel(
-    context: Context
+    context: Context,
 ) : ViewModel() {
 
     private val loginUseCase = LoginUseCase()
     private val userSessionKeyUseCase = UserSessionKeyUseCase()
-    private val sharedPreferences = SharedPreferencesManager(context)
+    val sharedPreferences = SharedPreferencesManager(context)
+
+    val progressBar = mutableStateOf(value = false)
+    val successLogin = mutableStateOf(value = false)
+    val showErrorDialog = mutableStateOf(value = false)
 
     private val _oauthResult = MutableLiveData<UserOAuthResult>()
-    private val oauthResult: LiveData<UserOAuthResult> = _oauthResult
+    val oauthResult: LiveData<UserOAuthResult> = _oauthResult
 
     private val _userSessionKeyResult = MutableLiveData<UserSessionKeyResult>()
     private val userSessionKeyResult: LiveData<UserSessionKeyResult> = _userSessionKeyResult
@@ -46,28 +54,30 @@ class LoginViewModel(
     private fun enableLogin(email: String, password: String) =
         Patterns.EMAIL_ADDRESS.matcher(email).matches() && password.length > 5
 
-    fun onLoginClicked() {
+    fun onLoginClicked(email: String, password: String) {
         viewModelScope.launch {
-            email.value?.let { email ->
-                password.value?.let { password ->
-                    _oauthResult.value = loginUseCase.invoke(
-                        user = email,
-                        password = password
-                    )
-                }
-            }
-        }
-
-        oauthResult.value?.let { oauthResult ->
-            if (oauthResult.status == "ok") {
-                getSessionKey(
-                    oU = oauthResult.oU,
-                    uC = oauthResult.oU,
-                    oauthKey = oauthResult.oauthKey
+            try {
+                progressBar.value = true
+                _oauthResult.value = loginUseCase.invoke(
+                    user = email,
+                    password = password
                 )
-
-            } else {
-                print("No sirvio")
+                oauthResult.value?.let { oauthResult ->
+                    if (oauthResult.status == "ok") {
+                        delay(1500L)
+                        getSessionKey(
+                            oU = oauthResult.oU,
+                            uC = oauthResult.oU,
+                            oauthKey = oauthResult.oauthKey
+                        )
+                        successLogin.value = true
+                    } else  {
+                        showErrorDialog.value = true
+                    }
+                }
+            } catch (e: Exception) {
+                Log.d("Logging", "Error Authentication", e)
+                progressBar.value = false
             }
         }
     }
